@@ -44,6 +44,25 @@ echo "Installing Terraform"
 $CURL_CMD -o $DOWNLOADED_FILE $DOWNLOAD_URL
 $INSTALL_CMD
 
+
+###
+# .bash_profile or .profile
+###
+echo "Setting up profile"
+cp $PROJECTDIR/terraform_install $HOME/.terraform_install
+sed -i -e "s@###MY_PROJECT_DIR###@${PROJECTDIR}@" $HOME/.terraform_install
+sed -i -e "s@###MY_EXE_NAME###@${PROGNAME}@" $HOME/.terraform_install
+
+echo ""
+if [ -f "$HOME/.bash_profile" ]; then
+  echo "Setting up .bash_profile"
+  grep -q -F 'source "$HOME/.terraform_install"' "$HOME/.bash_profile" || echo 'source "$HOME/.terraform_install"' >> "$HOME/.bash_profile"
+else
+  echo "Setting up .profile"
+  grep -q -F 'source "$HOME/.terraform_install"' "$HOME/.profile" || echo 'source "$HOME/.terraform_install"' >> "$HOME/.profile"
+fi
+
+
 ###
 # Finished!
 ###
