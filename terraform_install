@@ -1,0 +1,10 @@
+# Check for Terraform installation and install if not found
+which terraform | grep -q "/usr/local/bin/terraform"
+if [ $? -eq 0 ]; then
+  echo ""
+else
+  echo "No version of Terraform was found.  Will attempt to install..."
+  echo ""
+  cd ###MY_PROJECT_DIR###
+  ###MY_PROJECT_DIR###/###MY_EXE_NAME###
+fi
