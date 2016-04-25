@@ -2,51 +2,57 @@
 
 # vim: filetype=sh:tabstop=2:shiftwidth=2:expandtab
 
-# Following the following official golang instructions:
-# https://golang.org/doc/install
-
 readonly PROGNAME=$(basename $0)
-readonly PROJECTDIR="$( cd "$(dirname "$0")" ; pwd -P )"
+readonly PROGDIR="$( cd "$(dirname "$0")" ; pwd -P )"
+readonly ARGS="$@"
 
-readonly OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
-readonly ARCH="$(uname -m)"
-if [ -f "/etc/os-release" ]; then
-  source os_release
-fi
-
-readonly TMP_DIR="/tmp"
-readonly BIN_DIR="$HOME/bin"
-readonly CURL_CMD=`which curl`
-readonly UNZIP_CMD=`which unzip`
-
-readonly TERRAFORM_VERSION="0.6.14"
-readonly DOWNLOAD_URL="https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
-readonly DOWNLOADED_FILE="$TMP_DIR/terraform.zip"
-
-INSTALL_CMD="$UNZIP_CMD $DOWNLOADED_FILE -d /usr/local/bin"
-REMOVE_CMD="rm -rf /usr/local/bin/terraform*"
-
-if [ "$(id -u)" != "0" ]; then
-  echo "This script must be run as root" 1>&2
-  echo "Will attempt to install using sudo..."
-  INSTALL_CMD="sudo ${INSTALL_CMD}"
-  REMOVE_CMD="sudo ${REMOVE_CMD}"
-fi
+# pull in utils
+source "${PROGDIR}/utils.sh"
 
 
-echo ""
-echo "Remove any residual artitfacts from previous installs..."
-rm -rf $DOWNLOADED_FILE
-$REMOVE_CMD
+# Make sure we have all the right stuff
+prerequisites() {
+  local curl_cmd=`which curl`
+  local unzip_cmd=`which unzip`
 
-echo ""
-echo "Installing Terraform"
-$CURL_CMD -o $DOWNLOADED_FILE $DOWNLOAD_URL
-$INSTALL_CMD
+  if [ -z "$curl_cmd" ]; then
+    error "curl does not appear to be installed. Please install and re-run this script."
+    exit 1
+  fi
 
-###
-# Finished!
-###
-echo ""
-#echo 'now you can source $HOME/.golang_profile'
-echo 'now you can start using terraform'
+  if [ -z "$unzip_cmd" ]; then
+    error "unzip does not appear to be installed. Please install and re-run this script."
+    exit 1
+  fi
+
+  # we want to be root to install / uninstall
+  if [ "$EUID" -ne 0 ]; then
+    error "Please run as root"
+    exit 1
+  fi
+}
+
+
+# Install Terraform
+install_terraform() {
+  echo ""
+  echo "Downloading Terraform zip'd binary"
+  curl -o "$DOWNLOADED_FILE" "$DOWNLOAD_URL"
+
+  echo ""
+  echo "Extracting Terraform executable"
+  unzip "$DOWNLOADED_FILE" -d "$INSTALL_DIR"
+}
+
+
+main() {
+  # Be unforgiving about errors
+  set -euo pipefail
+  readonly SELF="$(absolute_path $0)"
+  prerequisites
+  cd "${PROGDIR}" || exit 1
+  bash uninstall-terraform.sh || exit 1
+  install_terraform
+}
+
+[[ "$0" == "$BASH_SOURCE" ]] && main
