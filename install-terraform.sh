@@ -42,6 +42,8 @@ install_terraform() {
   echo ""
   echo "Extracting Terraform executable"
   unzip "$DOWNLOADED_FILE" -d "$INSTALL_DIR"
+  
+  rm "$DOWNLOADED_FILE"
 }
 
 
