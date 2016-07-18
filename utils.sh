@@ -1,6 +1,6 @@
 #!/bin/bash -
 
-readonly TERRAFORM_VERSION="0.6.15"
+readonly TERRAFORM_VERSION="0.6.16"
 readonly INSTALL_DIR="/usr/local/bin"
 readonly DOWNLOAD_DIR="/tmp"
 readonly DOWNLOAD_URL="https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
